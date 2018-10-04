@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.SimpleCursorAdapter
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
@@ -44,19 +45,59 @@ class MainActivity : AppCompatActivity() {
 
         }
         read.setOnClickListener {
-/* Cursor query(String table, String[] columns, String selection,
- String[] selectionArgs, String groupBy, String having, String orderBy) */
-var c : Cursor =   dBase.query("employee",null,
-        null,null,null,null,
-        null)
-var adapter = SimpleCursorAdapter(this@MainActivity,
-        R.layout.indiview,c, arrayOf("id","name","desig","dept"),
-        intArrayOf(R.id.id,R.id.name,R.id.desig,R.id.dept),0)
-lview.adapter = adapter
-
+            // select *from employee
+/* String table, String[] columns, String selection,
+String[] selectionArgs, String groupBy, String having, String orderBy */
+            // select *from employee where id=123
+    /*    var c:Cursor =    dBase.query("employee", null,
+                    "id=?", arrayOf(et1.text.toString()),null,
+                    null,null) */
+            /*var c:Cursor =    dBase.query("employee", null,
+                    null,null,"id",
+                    "id>123",null)*/
+            var c:Cursor =    dBase.query("employee", null,
+                    null,null,null,
+                    null,"id desc")
+            var list = mutableListOf<String>()
+        while(c.moveToNext()){
+            list.add(c.getInt(1).toString()+"\t"+c.getString(2)+"\n"+
+                                c.getString(3)+"\t"+c.getString(4))
         }
-        update.setOnClickListener {  }
-        delete.setOnClickListener {  }
+            var adapter = ArrayAdapter<String>(this@MainActivity,
+                    android.R.layout.simple_list_item_single_choice,list)
+            lview.adapter = adapter
+        }
+        update.setOnClickListener {
+// update set name=value1,desig=value2 from employee where id=?
+// String table, ContentValues values, String whereClause, String[] whereArgs
+            var cv = ContentValues()
+           cv.put("name",et2.text.toString())
+            cv.put("desig",et3.text.toString())
+
+       var status =  dBase.update("employee",cv,"id=?",
+                   arrayOf(et1.text.toString()) )
+            if(status>0){
+                Toast.makeText(this@MainActivity,"Row Updated",
+                        Toast.LENGTH_LONG).show()
+                et1.setText(""); et2.setText(""); et3.setText(""); et4.setText("")
+            }else{
+                Toast.makeText(this@MainActivity,"Row Updation Failed..",
+                        Toast.LENGTH_LONG).show()
+            }
+        }
+        delete.setOnClickListener {
+       // String table, String whereClause, String[] whereArgs
+        var status =  dBase.delete("employee","id=?",
+                        arrayOf(et1.text.toString()))
+            if(status>0){
+                Toast.makeText(this@MainActivity,"Row Deleted",
+                        Toast.LENGTH_LONG).show()
+                et1.setText(""); et2.setText(""); et3.setText(""); et4.setText("")
+            }else{
+                Toast.makeText(this@MainActivity,"Row Deletion Failed..",
+                        Toast.LENGTH_LONG).show()
+            }
+        }
 
     }
 }
